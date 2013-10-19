@@ -27,7 +27,21 @@ void testApp::update(){
 //--------------------------------------------------------------
 void testApp::draw(){
     ofSetColor(63);
-    ofDrawBitmapString(response.getRawString(), 10, 12);
+    int lineHeigt = 15;
+
+    // 取得した時間を表示
+    string available_time = response["results"][0]["closest_available_time_iso_string"].asString();
+    ofDrawBitmapString(available_time, 10, lineHeigt*1);
+    
+    // センサーの全てのメンバー名を取得
+    ofxJSONElement::Members mem = response["results"][0]["sensors"].getMemberNames();
+    
+    // メンバーごとにセンサーの値をとりだして、画面に表示
+    for (int i = 0; i < mem.size(); i++) {
+        string lavel = mem[i];
+        float value = response["results"][0]["sensors"][mem[i]]["value"].asFloat();
+        ofDrawBitmapString(lavel + " = " + ofToString(value), 10, lineHeigt * (i + 3));
+    }
 }
 
 //--------------------------------------------------------------
