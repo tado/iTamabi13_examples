@@ -34,14 +34,11 @@ public:
     ofEasyCam camera;
     ofxSATTime epoch;
     ofxSATTime current;
-    
-    static const int EARTH_SIZE = 6378;
-    static const int TIME_SCALE = 100;
-    
     ofBoxPrimitive box;
     ofSpherePrimitive earth;
     ofImage earthTexture;
     ofMesh orbit;
+    
+    static const int EARTH_SIZE = 6378;
+    static const int TIME_SCALE = 500;
 };
-
-

@@ -23,7 +23,7 @@ void testApp::setup(){
     current = epoch;
     
     // 衛星の大きさ設定
-    box.set(500);
+    box.set(200);
     
     // 軌道の描画モード設定
     orbit.setMode(OF_PRIMITIVE_LINE_STRIP);
@@ -35,10 +35,23 @@ void testApp::update(){
     current =  epoch + ofxSATTimeDiff(ofGetElapsedTimef() * TIME_SCALE);
     sgp.update(&current);
     
-    // 衛星の位置を設定
-    box.setPosition(sgp.getPos());
-    orbit.addVertex(sgp.getPos());
-    orbit.addColor(ofFloatColor(1.0,1.0,0.0));
+    // 衛星の座標をクオータニオンで計算
+    ofQuaternion latRot;
+    ofQuaternion lonRot;
+    ofVec3f position;
+    
+    float latitude = -sgp.getSatLatitude();
+    float longitude = sgp.getSatLongitude();
+    float altitude = sgp.getSatAlt() + EARTH_SIZE;
+    
+    position.set(0, 0, altitude);
+    latRot.makeRotate(latitude, 1, 0, 0);
+    lonRot.makeRotate(longitude, 0, 1, 0);
+    position = latRot * lonRot * position;
+    box.setPosition(position);
+    
+    orbit.addVertex(position);
+    orbit.addColor(ofFloatColor(1.0, 1.0, 0.0));
 }
 
 //--------------------------------------------------------------
@@ -62,6 +75,11 @@ void testApp::draw(){
     
     ofDisableDepthTest();
     camera.end();
+    
+    // 日時を出力
+    ofSetColor(255);
+    string curretTimeStr = current.format("%YYYY/%MM/%DD %hh:%mm:%ss");
+    ofDrawBitmapString(curretTimeStr, 10, 15);
 }
 
 void testApp::onNotifyTLE(ofxSAT::TLERec const& tle, ofxSATTime const& time){

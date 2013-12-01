@@ -23,7 +23,7 @@ void testApp::setup(){
     current = epoch;
     
     // 衛星設定
-    box.set(500);
+    box.set(200);
 }
 
 //--------------------------------------------------------------
@@ -31,8 +31,20 @@ void testApp::update(){
     current =  epoch + ofxSATTimeDiff(ofGetElapsedTimef() * TIME_SCALE);
     sgp.update(&current);
     
-    // 衛星の位置を設定
-    box.setPosition(sgp.getPos());
+    // 衛星の座標をクオータニオンで計算
+    ofQuaternion latRot;
+    ofQuaternion lonRot;
+    ofVec3f position;
+    
+    float latitude = -sgp.getSatLatitude();
+    float longitude = sgp.getSatLongitude();
+    float altitude = sgp.getSatAlt() + EARTH_SIZE;
+    
+    position.set(0, 0, altitude);
+    latRot.makeRotate(latitude, 1, 0, 0);
+    lonRot.makeRotate(longitude, 0, 1, 0);
+    position = latRot * lonRot * position;
+    box.setPosition(position);
 }
 
 //--------------------------------------------------------------

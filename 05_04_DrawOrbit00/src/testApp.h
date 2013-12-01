@@ -37,4 +37,5 @@ public:
     ofBoxPrimitive box;
 
     static const int TIME_SCALE = 100;
+    static const int EARTH_SIZE = 6378;
 };
