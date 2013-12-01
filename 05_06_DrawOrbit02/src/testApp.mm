@@ -14,53 +14,53 @@ void testApp::setup(){
     }
     
     // カメラ設定
-    camera.setFov(45.8);
-    camera.setFarClip(90000.f);
+    camera.setFov(45);
+    camera.setFarClip(100000);
     camera.setDistance(30000);
     
     // 時間設定
     epoch = ofxSATTime::currentTime();
     current = epoch;
     
-    // 衛星設定
+    // 衛星の大きさ設定
     box.set(500);
+    
+    // 軌道の描画モード設定
+    orbit.setMode(OF_PRIMITIVE_LINE_STRIP);
 }
+
 
 //--------------------------------------------------------------
 void testApp::update(){
     current =  epoch + ofxSATTimeDiff(ofGetElapsedTimef() * TIME_SCALE);
     sgp.update(&current);
     
-    // 衛星の座標をクオータニオンで計算
-    ofQuaternion latRot;
-    ofQuaternion lonRot;
-    ofVec3f position;
-    
-    float latitude = -sgp.getSatLatitude();
-    float longitude = sgp.getSatLongitude();
-    float altitude = sgp.getSatAlt() + EARTH_SIZE;
-    
-    position.set(0, 0, altitude);
-    latRot.makeRotate(latitude, 1, 0, 0);
-    lonRot.makeRotate(longitude, 0, 1, 0);
-    position = latRot * lonRot * position;
-    box.setPosition(position);
+    // 衛星の位置を設定
+    box.setPosition(sgp.getPos());
+    orbit.addVertex(sgp.getPos());
+    orbit.addColor(ofFloatColor(1.0,1.0,0.0));
 }
 
 //--------------------------------------------------------------
 void testApp::draw(){
     camera.begin();
     
+    // Zバッファー
+    ofEnableDepthTest();
+    
     // 地球を描画
-    ofSetColor(0, 127, 255);
-    earth.set(EARTH_SIZE, 12);
-    earth.setPosition(0, 0, 0);
+    ofSetColor(0, 0, 255);
+    earth.setRadius(EARTH_SIZE);
     earth.drawWireframe();
     
     // 衛星を描画
     ofSetColor(255);
     box.draw();
     
+    // 軌道を描画
+    orbit.draw();
+    
+    ofDisableDepthTest();
     camera.end();
 }
 

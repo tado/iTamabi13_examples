@@ -12,65 +12,27 @@ void testApp::setup(){
             cout << "Hello ARTSAT." << endl;
         }
     }
-    
-    // カメラ設定
-    camera.setFov(45);
-    camera.setFarClip(100000);
-    camera.setDistance(30000);
-    
-    // 時間設定
-    epoch = ofxSATTime::currentTime();
-    current = epoch;
-    
-    // 衛星の大きさ設定
-    box.set(500);
-    
-    // 地球のテクスチャーよみこみ
-    ofDisableArbTex();
-    earthTexture.loadImage("earth.jpg");
 }
-
 
 //--------------------------------------------------------------
 void testApp::update(){
-    current =  epoch + ofxSATTimeDiff(ofGetElapsedTimef() * TIME_SCALE);
+    // 現在の時刻を取得
+    current = ofxSATTime::currentTime();
+    // SGPに時間を設定
     sgp.update(&current);
-    
-    // 衛星の座標をクオータニオンで計算
-    ofQuaternion latRot;
-    ofQuaternion lonRot;
-    ofVec3f position;
-    
-    float latitude = -sgp.getSatLatitude();
-    float longitude = sgp.getSatLongitude();
-    float altitude = sgp.getSatAlt() + EARTH_SIZE;
-    
-    position.set(0, 0, altitude);
-    latRot.makeRotate(latitude, 1, 0, 0);
-    lonRot.makeRotate(longitude, 0, 1, 0);
-    position = latRot * lonRot * position;
-    box.setPosition(position);
+    // 現在のPRISM衛星の3D座標を算出
+    position = sgp.getPos();
 }
 
 //--------------------------------------------------------------
 void testApp::draw(){
-    camera.begin();
-    
-    // Zバッファー
-    ofEnableDepthTest();
-    
-    // 地球を描画
-    ofSetColor(255);
-    earthTexture.getTextureReference().bind();
-    earth.setRadius(EARTH_SIZE);
-    earth.draw();
-    earthTexture.getTextureReference().unbind();
-    
-    // 衛星を描画
-    box.draw();
-    
-    ofDisableDepthTest();
-    camera.end();
+    // 現在の衛星の座標を表示
+    ofSetHexColor(0xffffff);
+    string curretTimeStr = current.format("%YYYY/%MM/%DD %hh:%mm:%ss");
+    ofDrawBitmapString(curretTimeStr, 10, 15);
+    ofDrawBitmapString("x = " + ofToString(position.x, 4) + "\n"
+                       + "y = " + ofToString(position.y, 4) + "\n"
+                       + "z = " + ofToString(position.z, 4), 10, 50);
 }
 
 void testApp::onNotifyTLE(ofxSAT::TLERec const& tle, ofxSATTime const& time){
@@ -95,7 +57,6 @@ void testApp::onNotifyTLE(ofxSAT::TLERec const& tle, ofxSATTime const& time){
         // SGPをセットアップ
         sgp.setup(path.c_str());
     }
-    return;
 }
 
 void testApp::onNotifyData(ofxSATTime const& time){
